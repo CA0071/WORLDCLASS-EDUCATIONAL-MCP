@@ -1,4 +1,4 @@
-import type { D1DatabaseInterface } from "../db/types";
+import type { D1DatabaseInterface } from "../db/types.js";
 
 export type UserRole = "student" | "teacher" | "lecturer" | "admin";
 
@@ -92,7 +92,10 @@ export async function verifyToken(token: string | undefined, env: RuntimeEnv): P
   if (parts.length === 2) {
     const role = parts[1];
     if (role && (["student", "teacher", "lecturer", "admin"] as string[]).includes(role)) {
-      return { userId: "stub-user", role: role as UserRole, token };
+      const userId = parts[0]?.trim();
+      if (userId) {
+        return { userId, role: role as UserRole, token };
+      }
     }
   }
 

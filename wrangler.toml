@@ -35,6 +35,29 @@ name = "schoolme101-mcp-dev"
 [env.development.vars]
 ENVIRONMENT = "development"
 LOG_LEVEL = "debug"
+RATE_LIMIT_WINDOW_SECONDS = "60"
+RATE_LIMIT_MAX_REQUESTS = "120"
+
+[[env.development.kv_namespaces]]
+binding = "CACHE_KV"
+id = "REPLACE_WITH_CACHE_KV_ID"
+preview_id = "REPLACE_WITH_CACHE_KV_PREVIEW_ID"
+
+[[env.development.kv_namespaces]]
+binding = "AUDIT_KV"
+id = "REPLACE_WITH_AUDIT_KV_ID"
+preview_id = "REPLACE_WITH_AUDIT_KV_PREVIEW_ID"
+
+[[env.development.d1_databases]]
+binding = "APP_DB"
+database_name = "schoolme101-mcp"
+database_id = "REPLACE_WITH_D1_ID"
+preview_database_id = "REPLACE_WITH_D1_PREVIEW_ID"
+
+[[env.development.r2_buckets]]
+binding = "ASSET_BUCKET"
+bucket_name = "schoolme101-mcp-assets"
+preview_bucket_name = "schoolme101-mcp-assets-preview"
 
 [env.production]
 name = "schoolme101-mcp-prod"
@@ -43,3 +66,24 @@ ENVIRONMENT = "production"
 LOG_LEVEL = "info"
 RATE_LIMIT_WINDOW_SECONDS = "60"
 RATE_LIMIT_MAX_REQUESTS = "80"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "REPLACE_WITH_CACHE_KV_ID"
+preview_id = "REPLACE_WITH_CACHE_KV_PREVIEW_ID"
+
+[[env.production.kv_namespaces]]
+binding = "AUDIT_KV"
+id = "REPLACE_WITH_AUDIT_KV_ID"
+preview_id = "REPLACE_WITH_AUDIT_KV_PREVIEW_ID"
+
+[[env.production.d1_databases]]
+binding = "APP_DB"
+database_name = "schoolme101-mcp"
+database_id = "REPLACE_WITH_D1_ID"
+preview_database_id = "REPLACE_WITH_D1_PREVIEW_ID"
+
+[[env.production.r2_buckets]]
+binding = "ASSET_BUCKET"
+bucket_name = "schoolme101-mcp-assets"
+preview_bucket_name = "schoolme101-mcp-assets-preview"

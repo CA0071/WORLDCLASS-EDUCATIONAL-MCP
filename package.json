@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "npm run typecheck",
+    "start": "node dist/index.js",
     "test": "node --import tsx --test src/tests/**/*.test.ts",
     "deploy": "wrangler deploy --env production"
   },

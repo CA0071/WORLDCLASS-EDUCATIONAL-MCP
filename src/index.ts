@@ -1,5 +1,5 @@
-import { handleHttpRoutes, handleMcpRequest } from "./server/mcpServer";
-import type { RuntimeEnv } from "./security/auth";
+import { handleHttpRoutes, handleMcpRequest } from "./server/mcpServer.js";
+import type { RuntimeEnv } from "./security/auth.js";
 
 export default {
   async fetch(request: Request, env: RuntimeEnv): Promise<Response> {

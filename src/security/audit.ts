@@ -1,5 +1,5 @@
-import type { D1DatabaseInterface } from "../db/types";
-import type { AuthContext } from "./auth";
+import type { D1DatabaseInterface } from "../db/types.js";
+import type { AuthContext } from "./auth.js";
 
 export interface AuditEvent {
   toolName: string;

@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { getLearningObjectives, getSubjectsByGrade, listCurriculumFrameworks, SUPPORTED_LANGUAGES } from "../domain/curriculum";
-import { createStudyPlan, generateRevisionPack, spacedRepetitionSchedule } from "../domain/study";
-import { explainScienceConcept, generateMathPractice, generateScienceQuiz, solveMathStepwise } from "../domain/stem";
-import { grammarPracticeGenerator, languageComprehensionQuestions, languageReadingPassage } from "../domain/language";
-import { generateAssignment, generateExamPaper, markSchemeGenerator, rubricGenerator } from "../domain/assessment";
-import { classProgressSummary, fetchClassDashboard, fetchStudentProgressHistory, identifyLearningGaps, persistStudentProgress, recommendInterventions } from "../domain/progress";
-import { classroomActivityGenerator, lessonPlanGenerator } from "../domain/teacher";
-import { dyslexiaFriendlyFormat, simplifyTextForLevel } from "../domain/accessibility";
-import type { D1DatabaseInterface } from "../db/types";
-import type { UserRole } from "../security/auth";
+import { getLearningObjectives, getSubjectsByGrade, listCurriculumFrameworks, SUPPORTED_LANGUAGES } from "../domain/curriculum.js";
+import { createStudyPlan, generateRevisionPack, spacedRepetitionSchedule } from "../domain/study.js";
+import { explainScienceConcept, generateMathPractice, generateScienceQuiz, solveMathStepwise } from "../domain/stem.js";
+import { grammarPracticeGenerator, languageComprehensionQuestions, languageReadingPassage } from "../domain/language.js";
+import { generateAssignment, generateExamPaper, markSchemeGenerator, rubricGenerator } from "../domain/assessment.js";
+import { classProgressSummary, fetchClassDashboard, fetchStudentProgressHistory, identifyLearningGaps, persistStudentProgress, recommendInterventions } from "../domain/progress.js";
+import { classroomActivityGenerator, lessonPlanGenerator } from "../domain/teacher.js";
+import { dyslexiaFriendlyFormat, simplifyTextForLevel } from "../domain/accessibility.js";
+import type { D1DatabaseInterface } from "../db/types.js";
+import type { UserRole } from "../security/auth.js";
 
 const phaseSchema = z.enum(["foundation", "intermediate", "senior", "fet", "tertiary"]);
 const languageSchema = z.enum(SUPPORTED_LANGUAGES);
@@ -146,10 +146,9 @@ export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
   },
   {
     name: "record_student_progress",
-    description: "Record student progress (destructive/write operation). Persists to D1 when available.",
-    inputSchema: withContext({ studentId: z.string().min(2), subject: subjectSchema, score: z.number().min(0).max(100), approvalCode: z.string().optional() }),
+    description: "Record student progress. Persists to D1 when available.",
+    inputSchema: withContext({ studentId: z.string().min(2), subject: subjectSchema, score: z.number().min(0).max(100) }),
     requiredRole: "teacher",
-    destructive: true,
     execute: async (input: any, context: ToolExecutionContext) => ({
       saved: await persistStudentProgress({ studentId: input.studentId, subject: input.subject, score: input.score }, context.db),
     }),

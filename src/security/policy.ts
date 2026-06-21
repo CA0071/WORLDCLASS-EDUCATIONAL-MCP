@@ -1,4 +1,4 @@
-import type { UserRole } from "./auth";
+import type { UserRole } from "./auth.js";
 
 const rank: Record<UserRole, number> = {
   student: 1,

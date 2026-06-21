@@ -1,4 +1,4 @@
-import type { RuntimeEnv } from "./auth";
+import type { RuntimeEnv } from "./auth.js";
 
 export function ensureApproved(approvalCode: string | undefined, env: RuntimeEnv): void {
   if (!approvalCode) {

@@ -1,11 +1,11 @@
-import { ANDROID_ENDPOINTS, ANDROID_EXAMPLES } from "../android/contracts";
-import { INTEGRATIONS } from "../integrations/placeholders";
-import { ensureApproved } from "../security/approval";
-import { auditToolUsage } from "../security/audit";
-import { verifyToken, type RuntimeEnv } from "../security/auth";
-import { ensureRole } from "../security/policy";
-import { getToolByName, listToolsForMcp } from "../tools/catalog";
-import type { JsonRpcRequest, JsonRpcResponse } from "./types";
+import { ANDROID_ENDPOINTS, ANDROID_EXAMPLES } from "../android/contracts.js";
+import { INTEGRATIONS } from "../integrations/placeholders.js";
+import { ensureApproved } from "../security/approval.js";
+import { auditToolUsage } from "../security/audit.js";
+import { verifyToken, type RuntimeEnv } from "../security/auth.js";
+import { ensureRole } from "../security/policy.js";
+import { getToolByName, listToolsForMcp } from "../tools/catalog.js";
+import type { JsonRpcRequest, JsonRpcResponse } from "./types.js";
 
 function ok(id: string | number | null, result: unknown): JsonRpcResponse {
   return { jsonrpc: "2.0", id, result };
@@ -15,15 +15,41 @@ function failure(id: string | number | null, code: number, message: string, data
   return { jsonrpc: "2.0", id, error: { code, message, data } };
 }
 
+function errorResponse(id: string | number | null, error: unknown): Response {
+  const message = error instanceof Error ? error.message : "Unknown server error";
+
+  if (error instanceof SyntaxError) {
+    return Response.json(failure(id, -32700, "Parse error"), { status: 400 });
+  }
+
+  if (
+    message === "Missing bearer token." ||
+    message === "Invalid JWT format." ||
+    message === "Invalid JWT signature." ||
+    message === "JWT expired." ||
+    message === "JWT missing valid role claim." ||
+    message.startsWith("Token verification failed.")
+  ) {
+    return Response.json(failure(id, -32001, message), { status: 401 });
+  }
+
+  if (message.startsWith("Insufficient role.") || message.startsWith("Approval ")) {
+    return Response.json(failure(id, -32003, message), { status: 403 });
+  }
+
+  return Response.json(failure(id, -32000, message), { status: 500 });
+}
+
 function getBearerToken(request: Request): string | undefined {
   const auth = request.headers.get("authorization") ?? "";
   return auth.startsWith("Bearer ") ? auth.slice(7) : undefined;
 }
 
 export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promise<Response> {
+  let id: string | number | null = null;
   try {
     const body = (await request.json()) as JsonRpcRequest;
-    const id = body.id ?? null;
+    id = body.id ?? null;
 
     if (body.method === "initialize") {
       return Response.json(
@@ -89,8 +115,7 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
 
     return Response.json(failure(id, -32601, `Method not found: ${body.method}`), { status: 404 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown server error";
-    return Response.json(failure(null, -32000, message), { status: 500 });
+    return errorResponse(id, error);
   }
 }
 

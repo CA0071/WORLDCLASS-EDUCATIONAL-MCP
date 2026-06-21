@@ -1,4 +1,4 @@
-import type { D1DatabaseInterface } from "../db/types";
+import type { D1DatabaseInterface } from "../db/types.js";
 
 export interface ProgressRecord {
   studentId: string;
@@ -15,6 +15,11 @@ export interface ClassDashboard {
   totalRecords: number;
   average: number;
   riskDistribution: { onTrack: number; watch: number; highSupport: number };
+}
+
+function toNumber(value: number | string | null | undefined): number {
+  const numeric = typeof value === "number" ? value : Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
 }
 
 export async function persistStudentProgress(record: ProgressRecord, db?: D1DatabaseInterface): Promise<ProgressRecord> {
@@ -36,7 +41,7 @@ export async function fetchStudentProgressHistory(
   db: D1DatabaseInterface,
   subject?: string,
 ): Promise<ProgressHistoryEntry[]> {
-  type Row = { student_id: string; subject: string; score: number; recorded_at: string };
+  type Row = { student_id: string; subject: string; score: number | string; recorded_at: string };
   const stmt =
     subject !== undefined
       ? db
@@ -54,7 +59,7 @@ export async function fetchStudentProgressHistory(
   return result.results.map((row) => ({
     studentId: row.student_id,
     subject: row.subject,
-    score: row.score,
+    score: toNumber(row.score),
     recordedAt: row.recorded_at,
   }));
 }
@@ -62,11 +67,11 @@ export async function fetchStudentProgressHistory(
 export async function fetchClassDashboard(db: D1DatabaseInterface, subject?: string): Promise<ClassDashboard> {
   type Row = {
     subject: string;
-    total: number;
-    avg_score: number | null;
-    on_track: number;
-    watch: number;
-    high_support: number;
+    total: number | string;
+    avg_score: number | string | null;
+    on_track: number | string;
+    watch: number | string;
+    high_support: number | string;
   };
   const stmt =
     subject !== undefined
@@ -92,12 +97,12 @@ export async function fetchClassDashboard(db: D1DatabaseInterface, subject?: str
 
   return {
     subject: row.subject,
-    totalRecords: row.total,
-    average: Number((row.avg_score ?? 0).toFixed(2)),
+    totalRecords: toNumber(row.total),
+    average: Number(toNumber(row.avg_score).toFixed(2)),
     riskDistribution: {
-      onTrack: row.on_track,
-      watch: row.watch,
-      highSupport: row.high_support,
+      onTrack: toNumber(row.on_track),
+      watch: toNumber(row.watch),
+      highSupport: toNumber(row.high_support),
     },
   };
 }

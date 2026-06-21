@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getToolByName, TOOL_CATALOG } from "../tools/catalog";
+import { handleMcpRequest } from "../server/mcpServer.js";
+import { verifyToken } from "../security/auth.js";
+import { getToolByName, TOOL_CATALOG } from "../tools/catalog.js";
 
 test("tool catalog has required baseline tools", () => {
   assert.ok(TOOL_CATALOG.length >= 26);
@@ -23,10 +25,10 @@ test("create_study_plan validation rejects invalid week count", () => {
   assert.equal(invalid.success, false);
 });
 
-test("record_student_progress is flagged destructive", () => {
+test("record_student_progress requires teacher role without approval gate", () => {
   const tool = getToolByName("record_student_progress");
   assert.ok(tool);
-  assert.equal(tool.destructive, true);
+  assert.equal(tool.destructive, undefined);
   assert.equal(tool.requiredRole, "teacher");
 });
 
@@ -66,4 +68,74 @@ test("record_student_progress persists and returns record without db", async () 
   const saved = (result as { saved: { studentId: string; subject: string; score: number } }).saved;
   assert.equal(saved.studentId, "learner1");
   assert.equal(saved.score, 75);
+});
+
+test("verifyToken preserves user id for development stub tokens", async () => {
+  const auth = await verifyToken("teacher-7:teacher", {});
+  assert.equal(auth.userId, "teacher-7");
+  assert.equal(auth.role, "teacher");
+});
+
+test("handleMcpRequest allows teacher progress recording without approval code", async () => {
+  const authorization = ["Bearer", "teacher-1:teacher"].join(" ");
+  const response = await handleMcpRequest(
+    new Request("https://example.com/mcp", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "progress-1",
+        method: "tools/call",
+        params: {
+          name: "record_student_progress",
+          arguments: {
+            studentId: "learner1",
+            subject: "Mathematics",
+            score: 75,
+            locale: "en-ZA",
+            country: "ZA",
+            language: "English",
+          },
+        },
+      }),
+    }),
+    {},
+  );
+
+  assert.equal(response.status, 200);
+  const body = (await response.json()) as { result: { content: Array<{ json: { saved: { studentId: string; score: number } } }> } };
+  assert.equal(body.result.content[0]?.json.saved.studentId, "learner1");
+  assert.equal(body.result.content[0]?.json.saved.score, 75);
+});
+
+test("handleMcpRequest returns 403 when role is insufficient", async () => {
+  const authorization = ["Bearer", "student-1:student"].join(" ");
+  const response = await handleMcpRequest(
+    new Request("https://example.com/mcp", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "dashboard-1",
+        method: "tools/call",
+        params: {
+          name: "teacher_dashboard",
+          arguments: {
+            locale: "en-ZA",
+            country: "ZA",
+            language: "English",
+          },
+        },
+      }),
+    }),
+    {},
+  );
+
+  assert.equal(response.status, 403);
 });

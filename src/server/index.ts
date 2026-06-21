@@ -1,1 +1,1 @@
-export { handleMcpRequest, handleHttpRoutes } from "./mcpServer";
+export { handleMcpRequest, handleHttpRoutes } from "./mcpServer.js";
