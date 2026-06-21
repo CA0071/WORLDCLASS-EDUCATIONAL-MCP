@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getLearningObjectives, getSubjectsByGrade, listCurriculumFrameworks, SUPPORTED_LANGUAGES, type SupportedLanguage } from "../domain/curriculum";
+import { getLearningObjectives, getSubjectsByGrade, listCurriculumFrameworks, SUPPORTED_LANGUAGES } from "../domain/curriculum";
 import { createStudyPlan, generateRevisionPack, spacedRepetitionSchedule } from "../domain/study";
 import { explainScienceConcept, generateMathPractice, generateScienceQuiz, solveMathStepwise } from "../domain/stem";
 import { grammarPracticeGenerator, languageComprehensionQuestions, languageReadingPassage } from "../domain/language";
@@ -208,5 +208,3 @@ export function listToolsForMcp(): Array<{ name: string; description: string; in
     inputSchema: z.toJSONSchema(tool.inputSchema),
   }));
 }
-
-export const DEFAULT_LANGUAGE_OPTIONS: SupportedLanguage[] = [...SUPPORTED_LANGUAGES];
