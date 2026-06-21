@@ -6,6 +6,10 @@ export interface ProgressRecord {
   score: number;
 }
 
+export interface PersistedProgressRecord extends ProgressRecord {
+  persisted: boolean;
+}
+
 export interface ProgressHistoryEntry extends ProgressRecord {
   recordedAt: string;
 }
@@ -25,18 +29,18 @@ function toNumber(value: number | string | null | undefined): number {
   return Number.isFinite(numeric) ? numeric : 0;
 }
 
-export async function persistStudentProgress(record: ProgressRecord, db?: D1DatabaseInterface): Promise<ProgressRecord> {
+export async function persistStudentProgress(
+  record: ProgressRecord,
+  db?: D1DatabaseInterface,
+): Promise<PersistedProgressRecord> {
   if (db) {
     await db
       .prepare("INSERT INTO student_progress (student_id, subject, score) VALUES (?, ?, ?)")
       .bind(record.studentId, record.subject, record.score)
       .run();
+    return { ...record, persisted: true };
   }
-  return record;
-}
-
-export function recordStudentProgress(record: ProgressRecord): ProgressRecord {
-  return record;
+  return { ...record, persisted: false };
 }
 
 export async function fetchStudentProgressHistory(

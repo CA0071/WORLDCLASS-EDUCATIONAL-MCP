@@ -9,6 +9,7 @@ export interface AuthContext {
 }
 
 export interface RuntimeEnv {
+  ENVIRONMENT?: string;
   AUTH_BYPASS_TOKEN?: string;
   APPROVAL_BYPASS_CODE?: string;
   AUDIT_LOG_SINK?: string;
@@ -22,6 +23,14 @@ interface JwtPayload {
   sub?: string;
   role?: string;
   exp?: number;
+}
+
+function isDevelopmentAuthEnvironment(environment: string | undefined): boolean {
+  if (!environment) {
+    return false;
+  }
+
+  return ["development", "dev", "local", "test"].includes(environment.toLowerCase());
 }
 
 function base64UrlToBuffer(str: string): ArrayBuffer {
@@ -79,7 +88,9 @@ export async function verifyToken(token: string | undefined, env: RuntimeEnv): P
     throw new Error("Missing bearer token.");
   }
 
-  if (env.AUTH_BYPASS_TOKEN && token === env.AUTH_BYPASS_TOKEN) {
+  const allowDevelopmentTokens = isDevelopmentAuthEnvironment(env.ENVIRONMENT);
+
+  if (allowDevelopmentTokens && env.AUTH_BYPASS_TOKEN && token === env.AUTH_BYPASS_TOKEN) {
     return { userId: "dev-user", role: "admin", token };
   }
 
@@ -87,17 +98,20 @@ export async function verifyToken(token: string | undefined, env: RuntimeEnv): P
     return verifyJwtHs256(token, env.JWT_SECRET);
   }
 
-  // Stub fallback for local development when JWT_SECRET is not set.
-  const parts = token.split(":");
-  if (parts.length === 2) {
-    const role = parts[1];
-    if (role && (["student", "teacher", "lecturer", "admin"] as string[]).includes(role)) {
-      const userId = parts[0]?.trim();
-      if (userId) {
-        return { userId, role: role as UserRole, token };
+  if (allowDevelopmentTokens) {
+    const parts = token.split(":");
+    if (parts.length === 2) {
+      const role = parts[1];
+      if (role && (["student", "teacher", "lecturer", "admin"] as string[]).includes(role)) {
+        const userId = parts[0]?.trim();
+        if (userId) {
+          return { userId, role: role as UserRole, token };
+        }
       }
     }
   }
 
-  throw new Error("Token verification failed. Set JWT_SECRET for production or use stub format userId:role for development.");
+  throw new Error(
+    `Token verification failed. JWT_SECRET is required unless ENVIRONMENT is development, dev, local, or test (current: ${env.ENVIRONMENT ?? "unspecified"}).`,
+  );
 }

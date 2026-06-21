@@ -1,9 +1,27 @@
+function allocateIntegerTotals(total: number, weights: number[]): number[] {
+  const rawAllocations = weights.map((weight) => total * weight);
+  const floorAllocations = rawAllocations.map((value) => Math.floor(value));
+  let remainder = total - floorAllocations.reduce((sum, value) => sum + value, 0);
+
+  const rankedRemainders = rawAllocations
+    .map((value, index) => ({ index, remainder: value - floorAllocations[index]! }))
+    .sort((left, right) => right.remainder - left.remainder);
+
+  for (let i = 0; i < remainder; i++) {
+    const allocation = rankedRemainders[i % rankedRemainders.length]!;
+    floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;
+  }
+
+  return floorAllocations;
+}
+
 export function generateExamPaper(subject: string, marks: number): { sections: { name: string; marks: number }[] } {
+  const [sectionAMarks, sectionBMarks, sectionCMarks] = allocateIntegerTotals(marks, [0.3, 0.4, 0.3]);
   return {
     sections: [
-      { name: `${subject} Section A (Short questions)`, marks: Math.round(marks * 0.3) },
-      { name: `${subject} Section B (Structured questions)`, marks: Math.round(marks * 0.4) },
-      { name: `${subject} Section C (Extended response)`, marks: Math.round(marks * 0.3) },
+      { name: `${subject} Section A (Short questions)`, marks: sectionAMarks ?? 0 },
+      { name: `${subject} Section B (Structured questions)`, marks: sectionBMarks ?? 0 },
+      { name: `${subject} Section C (Extended response)`, marks: sectionCMarks ?? 0 },
     ],
   };
 }

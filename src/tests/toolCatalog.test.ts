@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { generateExamPaper } from "../domain/assessment.js";
+import { lessonPlanGenerator } from "../domain/teacher.js";
 import { handleMcpRequest } from "../server/mcpServer.js";
 import { verifyToken } from "../security/auth.js";
 import { getToolByName, TOOL_CATALOG } from "../tools/catalog.js";
@@ -32,7 +34,7 @@ test("handleMcpRequest initialize returns MCP-compliant handshake shape", async 
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", id: "init-1", method: "initialize" }),
     }),
-    {},
+    { ENVIRONMENT: "development" },
   );
 
   assert.equal(response.status, 200);
@@ -88,15 +90,27 @@ test("record_student_progress persists and returns record without db", async () 
     { studentId: "learner1", subject: "Mathematics", score: 75, locale: "en-ZA", country: "ZA", language: "English" },
     { role: "teacher" },
   );
-  const saved = (result as { saved: { studentId: string; subject: string; score: number } }).saved;
+  const saved = (result as { saved: { studentId: string; subject: string; score: number; persisted: boolean } }).saved;
   assert.equal(saved.studentId, "learner1");
   assert.equal(saved.score, 75);
+  assert.equal(saved.persisted, false);
 });
 
 test("verifyToken preserves user id for development stub tokens", async () => {
-  const auth = await verifyToken("teacher-7:teacher", {});
+  const auth = await verifyToken("teacher-7:teacher", { ENVIRONMENT: "development" });
   assert.equal(auth.userId, "teacher-7");
   assert.equal(auth.role, "teacher");
+});
+
+test("verifyToken rejects development stub tokens outside explicit development environments", async () => {
+  await assert.rejects(() => verifyToken("attacker:admin", {}), /JWT_SECRET is required unless ENVIRONMENT is development/i);
+});
+
+test("verifyToken ignores auth bypass token in production", async () => {
+  await assert.rejects(
+    () => verifyToken("dev-admin-token", { ENVIRONMENT: "production", AUTH_BYPASS_TOKEN: "dev-admin-token" }),
+    /JWT_SECRET is required unless ENVIRONMENT is development/i,
+  );
 });
 
 test("handleMcpRequest allows teacher progress recording without approval code", async () => {
@@ -125,7 +139,7 @@ test("handleMcpRequest allows teacher progress recording without approval code",
         },
       }),
     }),
-    {},
+    { ENVIRONMENT: "development" },
   );
 
   assert.equal(response.status, 200);
@@ -157,8 +171,30 @@ test("handleMcpRequest returns 403 when role is insufficient", async () => {
         },
       }),
     }),
-    {},
+    { ENVIRONMENT: "development" },
   );
 
   assert.equal(response.status, 403);
+});
+
+test("list_curriculum_frameworks returns all frameworks when country is omitted", async () => {
+  const tool = getToolByName("list_curriculum_frameworks");
+  assert.ok(tool);
+  const result = await tool.execute({ locale: "en-ZA", language: "English" }, { role: "student" });
+  assert.ok((result as { frameworks: unknown[] }).frameworks.length > 1);
+});
+
+test("generate_exam_paper section marks sum to requested total", () => {
+  const paper = generateExamPaper("Math", 25);
+  const total = paper.sections.reduce((sum, section) => sum + section.marks, 0);
+  assert.equal(total, 25);
+});
+
+test("lesson_plan_generator keeps short lessons within requested duration", () => {
+  const plan = lessonPlanGenerator("Fractions", 20);
+  const total = plan.flow.reduce((sum, step) => {
+    const match = step.match(/\((\d+) min\)/);
+    return sum + Number(match?.[1] ?? 0);
+  }, 0);
+  assert.equal(total, 20);
 });

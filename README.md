@@ -79,10 +79,11 @@ All tools are strongly validated using Zod and include locale/country/grade/phas
 ```
 
 ## Security Model
-- **Token verification hook**: `src/security/auth.ts` (stub; replace with JWT/OIDC)
+- **Token verification hook**: `src/security/auth.ts` (JWT required outside explicit `development`/`dev`/`local`/`test` environments)
 - **Role-aware authorization**: `student`, `teacher`, `lecturer`, `admin`
-- **Approval gate**: destructive tool `record_student_progress` requires approval code
+- **Approval gate**: hook available for future destructive tools
 - **Audit trail stub**: tool usage event logging in `src/security/audit.ts`
+- **Persistence transparency**: `record_student_progress` reports whether a D1 write was actually persisted
 - **Rate limit strategy**: configured via `RATE_LIMIT_*` vars, enforce using Cloudflare edge controls/WAF
 
 ## Android Integration Notes

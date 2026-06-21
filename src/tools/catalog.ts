@@ -21,6 +21,10 @@ const learningContextSchema = z.object({
   language: languageSchema.default("English"),
 });
 
+const learningContextWithoutCountryDefaultSchema = learningContextSchema.extend({
+  country: z.string().optional(),
+});
+
 export type ToolExecutionContext = {
   role: UserRole;
   db?: D1DatabaseInterface;
@@ -37,15 +41,17 @@ export interface ToolDefinition<TInput extends z.ZodTypeAny> {
 
 const subjectSchema = z.string().min(2);
 
-function withContext<T extends z.ZodRawShape>(shape: T) {
-  return z.object(shape).merge(learningContextSchema);
+function withContext<T extends z.ZodRawShape>(shape: T, options?: { preserveOptionalCountry?: boolean }) {
+  return z
+    .object(shape)
+    .merge(options?.preserveOptionalCountry ? learningContextWithoutCountryDefaultSchema : learningContextSchema);
 }
 
 export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
   {
     name: "list_curriculum_frameworks",
     description: "List curriculum frameworks with South Africa CAPS baseline metadata.",
-    inputSchema: withContext({ country: z.string().optional() }),
+    inputSchema: withContext({}, { preserveOptionalCountry: true }),
     execute: async (input: any) => ({ frameworks: listCurriculumFrameworks(input.country) }),
   },
   {
@@ -146,12 +152,19 @@ export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
   },
   {
     name: "record_student_progress",
-    description: "Record student progress. Persists to D1 when available and otherwise returns the accepted record without persistence.",
+    description: "Record student progress and report whether the write was persisted to D1 storage.",
     inputSchema: withContext({ studentId: z.string().min(2), subject: subjectSchema, score: z.number().min(0).max(100) }),
     requiredRole: "teacher",
-    execute: async (input: any, context: ToolExecutionContext) => ({
-      saved: await persistStudentProgress({ studentId: input.studentId, subject: input.subject, score: input.score }, context.db),
-    }),
+    execute: async (input: any, context: ToolExecutionContext) => {
+      const saved = await persistStudentProgress(
+        { studentId: input.studentId, subject: input.subject, score: input.score },
+        context.db,
+      );
+      return {
+        saved,
+        ...(saved.persisted ? {} : { note: "D1 storage not configured. Progress was validated but not persisted." }),
+      };
+    },
   },
   {
     name: "identify_learning_gaps",
