@@ -49,7 +49,7 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
         return Response.json(failure(id, -32601, `Tool not found: ${name}`), { status: 404 });
       }
 
-      const auth = verifyToken(getBearerToken(request), env);
+      const auth = await verifyToken(getBearerToken(request), env);
       if (tool.requiredRole) {
         ensureRole(auth.role, tool.requiredRole);
       }
@@ -66,7 +66,10 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
         ensureApproved(approvalCode, env);
       }
 
-      const result = await tool.execute(parsedData, { role: auth.role });
+      const result = await tool.execute(parsedData, {
+        role: auth.role,
+        ...(env.APP_DB !== undefined ? { db: env.APP_DB } : {}),
+      });
       const auditEvent: { toolName: string; userId: string; role: string; timestamp: string; country?: string; locale?: string } = {
         toolName: tool.name,
         userId: auth.userId,
@@ -79,7 +82,7 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
       if (typeof parsedData.locale === "string") {
         auditEvent.locale = parsedData.locale;
       }
-      await auditToolUsage(auditEvent, auth);
+      await auditToolUsage(auditEvent, auth, env.APP_DB);
 
       return Response.json(ok(id, { content: [{ type: "json", json: result }] }));
     }

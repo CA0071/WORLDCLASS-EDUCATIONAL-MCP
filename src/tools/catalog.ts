@@ -4,9 +4,10 @@ import { createStudyPlan, generateRevisionPack, spacedRepetitionSchedule } from 
 import { explainScienceConcept, generateMathPractice, generateScienceQuiz, solveMathStepwise } from "../domain/stem";
 import { grammarPracticeGenerator, languageComprehensionQuestions, languageReadingPassage } from "../domain/language";
 import { generateAssignment, generateExamPaper, markSchemeGenerator, rubricGenerator } from "../domain/assessment";
-import { classProgressSummary, identifyLearningGaps, recordStudentProgress, recommendInterventions } from "../domain/progress";
+import { classProgressSummary, fetchClassDashboard, fetchStudentProgressHistory, identifyLearningGaps, persistStudentProgress, recommendInterventions } from "../domain/progress";
 import { classroomActivityGenerator, lessonPlanGenerator } from "../domain/teacher";
 import { dyslexiaFriendlyFormat, simplifyTextForLevel } from "../domain/accessibility";
+import type { D1DatabaseInterface } from "../db/types";
 import type { UserRole } from "../security/auth";
 
 const phaseSchema = z.enum(["foundation", "intermediate", "senior", "fet", "tertiary"]);
@@ -22,6 +23,7 @@ const learningContextSchema = z.object({
 
 export type ToolExecutionContext = {
   role: UserRole;
+  db?: D1DatabaseInterface;
 };
 
 export interface ToolDefinition<TInput extends z.ZodTypeAny> {
@@ -144,11 +146,13 @@ export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
   },
   {
     name: "record_student_progress",
-    description: "Record student progress (destructive/write operation).",
+    description: "Record student progress (destructive/write operation). Persists to D1 when available.",
     inputSchema: withContext({ studentId: z.string().min(2), subject: subjectSchema, score: z.number().min(0).max(100), approvalCode: z.string().optional() }),
     requiredRole: "teacher",
     destructive: true,
-    execute: async (input: any) => ({ saved: recordStudentProgress({ studentId: input.studentId, subject: input.subject, score: input.score }) }),
+    execute: async (input: any, context: ToolExecutionContext) => ({
+      saved: await persistStudentProgress({ studentId: input.studentId, subject: input.subject, score: input.score }, context.db),
+    }),
   },
   {
     name: "identify_learning_gaps",
@@ -194,6 +198,30 @@ export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
     description: "Return dyslexia-friendly format guidance.",
     inputSchema: withContext({ text: z.string().min(10) }),
     execute: async (input: any) => dyslexiaFriendlyFormat(input.text),
+  },
+  {
+    name: "get_student_progress_history",
+    description: "Fetch a student's persisted progress history from D1 storage.",
+    inputSchema: withContext({ studentId: z.string().min(2), subject: z.string().min(2).optional() }),
+    requiredRole: "teacher",
+    execute: async (input: any, context: ToolExecutionContext) => {
+      if (!context.db) {
+        return { history: [], note: "D1 storage not configured. Set APP_DB binding in wrangler.toml." };
+      }
+      return { history: await fetchStudentProgressHistory(input.studentId, context.db, input.subject) };
+    },
+  },
+  {
+    name: "teacher_dashboard",
+    description: "Aggregated class progress dashboard with risk distribution, sourced from D1 storage.",
+    inputSchema: withContext({ subject: z.string().min(2).optional() }),
+    requiredRole: "teacher",
+    execute: async (input: any, context: ToolExecutionContext) => {
+      if (!context.db) {
+        return { dashboard: null, note: "D1 storage not configured. Set APP_DB binding in wrangler.toml." };
+      }
+      return { dashboard: await fetchClassDashboard(context.db, input.subject) };
+    },
   },
 ];
 
