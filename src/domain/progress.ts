@@ -17,12 +17,12 @@ export interface ClassDashboard {
   riskDistribution: { onTrack: number; watch: number; highSupport: number };
 }
 
-function toNumber(value: number | string | null | undefined): number {
+function toNumber(value: number | string | null | undefined, field: string): number {
   const numeric = typeof value === "number" ? value : Number(value ?? 0);
-  if (!Number.isFinite(numeric) && value !== null && value !== undefined) {
-    console.warn("Non-numeric D1 result encountered in progress query; coercing value to 0.", value);
+  if (!Number.isFinite(numeric)) {
+    throw new Error(`Invalid numeric D1 result for ${field}.`);
   }
-  return Number.isFinite(numeric) ? numeric : 0;
+  return numeric;
 }
 
 export async function persistStudentProgress(record: ProgressRecord, db?: D1DatabaseInterface): Promise<ProgressRecord> {
@@ -62,7 +62,7 @@ export async function fetchStudentProgressHistory(
   return result.results.map((row) => ({
     studentId: row.student_id,
     subject: row.subject,
-    score: toNumber(row.score),
+    score: toNumber(row.score, "student_progress.score"),
     recordedAt: row.recorded_at,
   }));
 }
@@ -100,12 +100,12 @@ export async function fetchClassDashboard(db: D1DatabaseInterface, subject?: str
 
   return {
     subject: row.subject,
-    totalRecords: toNumber(row.total),
-    average: Number(toNumber(row.avg_score).toFixed(2)),
+    totalRecords: toNumber(row.total, "student_progress.total"),
+    average: Number(toNumber(row.avg_score, "student_progress.avg_score").toFixed(2)),
     riskDistribution: {
-      onTrack: toNumber(row.on_track),
-      watch: toNumber(row.watch),
-      highSupport: toNumber(row.high_support),
+      onTrack: toNumber(row.on_track, "student_progress.on_track"),
+      watch: toNumber(row.watch, "student_progress.watch"),
+      highSupport: toNumber(row.high_support, "student_progress.high_support"),
     },
   };
 }

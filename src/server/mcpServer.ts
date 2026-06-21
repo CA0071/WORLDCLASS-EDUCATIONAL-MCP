@@ -69,6 +69,8 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
       const params = body.params ?? {};
       const name = typeof params.name === "string" ? params.name : "";
       const input = (params.arguments ?? {}) as Record<string, unknown>;
+      const approvalCode =
+        typeof params.approvalCode === "string" ? params.approvalCode : request.headers.get("x-approval-code") ?? undefined;
       const tool = getToolByName(name);
 
       if (!tool) {
@@ -88,7 +90,6 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
       const parsedData = parsed.data as Record<string, unknown>;
 
       if (tool.destructive) {
-        const approvalCode = typeof parsedData.approvalCode === "string" ? parsedData.approvalCode : undefined;
         ensureApproved(approvalCode, env);
       }
 
