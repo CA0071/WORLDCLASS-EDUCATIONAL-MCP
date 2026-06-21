@@ -1,79 +1,27 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
-    "target": "ES2020",
-    "lib": ["ES2020"],
-    "jsx": "react-jsx",
-
-    /* Module Resolution */
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": false,
-
-    /* Output */
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"],
-      "@types/*": ["src/types/*"],
-      "@utils/*": ["src/utils/*"],
-      "@handlers/*": ["src/handlers/*"],
-      "@integrations/*": ["src/integrations/*"]
-    },
-
-    /* Type Checking */
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "WebWorker"],
+    "types": ["@cloudflare/workers-types", "node"],
+    "rootDir": "src",
+    "outDir": "dist",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "useUnknownInCatchVariables": true,
-
-    /* Interop Constraints */
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-
-    /* Skip Lib Check */
     "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-
-    /* Decorator Support */
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
-    /* Advanced */
-    "useDefineForClassFields": true,
-    "removeComments": false
+    "sourceMap": true
   },
-
-  "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "coverage"
-  ],
-
-  "ts-node": {
-    "esm": true,
-    "experimentalEsm": true,
-    "compilerOptions": {
-      "module": "ESNext"
-    }
-  }
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
