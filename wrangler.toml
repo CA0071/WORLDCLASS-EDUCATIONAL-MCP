@@ -1,89 +1,30 @@
-name = "schoolme101-mcp"
+name = "worldclass-educational-mcp"
 main = "src/index.ts"
 compatibility_date = "2026-06-21"
-workers_dev = true
 
-[vars]
-ENVIRONMENT = "development"
-LOG_LEVEL = "debug"
-RATE_LIMIT_WINDOW_SECONDS = "60"
-RATE_LIMIT_MAX_REQUESTS = "120"
+[build]
+command = "npm run build"
 
 [[kv_namespaces]]
 binding = "CACHE_KV"
-id = "REPLACE_WITH_CACHE_KV_ID"
-preview_id = "REPLACE_WITH_CACHE_KV_PREVIEW_ID"
+id = "ce13dba7ee6644d287a60868468a5be7"
 
 [[kv_namespaces]]
 binding = "AUDIT_KV"
-id = "REPLACE_WITH_AUDIT_KV_ID"
-preview_id = "REPLACE_WITH_AUDIT_KV_PREVIEW_ID"
+id = "a0d1825827f24397b7fe93cd6bb672f1"
 
 [[d1_databases]]
 binding = "APP_DB"
 database_name = "schoolme101-mcp"
-database_id = "REPLACE_WITH_D1_ID"
-preview_database_id = "REPLACE_WITH_D1_PREVIEW_ID"
+database_id = "9110399d-27ae-492f-a60c-a51677ccc646"
 
 [[r2_buckets]]
 binding = "ASSET_BUCKET"
 bucket_name = "schoolme101-mcp-assets"
-preview_bucket_name = "schoolme101-mcp-assets-preview"
 
-[env.development]
-name = "schoolme101-mcp-dev"
-[env.development.vars]
-ENVIRONMENT = "development"
-LOG_LEVEL = "debug"
-RATE_LIMIT_WINDOW_SECONDS = "60"
-RATE_LIMIT_MAX_REQUESTS = "120"
-
-[[env.development.kv_namespaces]]
-binding = "CACHE_KV"
-id = "REPLACE_WITH_CACHE_KV_ID"
-preview_id = "REPLACE_WITH_CACHE_KV_PREVIEW_ID"
-
-[[env.development.kv_namespaces]]
-binding = "AUDIT_KV"
-id = "REPLACE_WITH_AUDIT_KV_ID"
-preview_id = "REPLACE_WITH_AUDIT_KV_PREVIEW_ID"
-
-[[env.development.d1_databases]]
-binding = "APP_DB"
-database_name = "schoolme101-mcp"
-database_id = "REPLACE_WITH_D1_ID"
-preview_database_id = "REPLACE_WITH_D1_PREVIEW_ID"
-
-[[env.development.r2_buckets]]
-binding = "ASSET_BUCKET"
-bucket_name = "schoolme101-mcp-assets"
-preview_bucket_name = "schoolme101-mcp-assets-preview"
-
-[env.production]
-name = "schoolme101-mcp-prod"
-[env.production.vars]
+[vars]
 ENVIRONMENT = "production"
 LOG_LEVEL = "info"
 RATE_LIMIT_WINDOW_SECONDS = "60"
-RATE_LIMIT_MAX_REQUESTS = "80"
+RATE_LIMIT_MAX_REQUESTS = "120"
 
-[[env.production.kv_namespaces]]
-binding = "CACHE_KV"
-id = "REPLACE_WITH_CACHE_KV_ID"
-preview_id = "REPLACE_WITH_CACHE_KV_PREVIEW_ID"
-
-[[env.production.kv_namespaces]]
-binding = "AUDIT_KV"
-id = "REPLACE_WITH_AUDIT_KV_ID"
-preview_id = "REPLACE_WITH_AUDIT_KV_PREVIEW_ID"
-
-[[env.production.d1_databases]]
-binding = "APP_DB"
-database_name = "schoolme101-mcp"
-database_id = "REPLACE_WITH_D1_ID"
-preview_database_id = "REPLACE_WITH_D1_PREVIEW_ID"
-
-[[env.production.r2_buckets]]
-binding = "ASSET_BUCKET"
-bucket_name = "schoolme101-mcp-assets"
-preview_bucket_name = "schoolme101-mcp-assets-preview"
