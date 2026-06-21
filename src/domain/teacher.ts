@@ -1,15 +1,10 @@
 import { allocateByWeights } from "./allocation.js";
 
 export function lessonPlanGenerator(topic: string, durationMinutes: number): { objectives: string[]; flow: string[] } {
-  const [starterMinutes, instructionMinutes, guidedPracticeMinutes, exitTicketMinutes]: [
-    number,
-    number,
-    number,
-    number,
-  ] =
+  const [starterMinutes, instructionMinutes, guidedPracticeMinutes, exitTicketMinutes] =
     durationMinutes >= 35
       ? [10, durationMinutes - 25, 10, 5]
-      : (allocateByWeights(durationMinutes, [10 / 35, 10 / 35, 10 / 35, 5 / 35]) as [number, number, number, number]);
+      : allocateByWeights(durationMinutes, [10 / 35, 10 / 35, 10 / 35, 5 / 35] as const);
 
   return {
     objectives: [

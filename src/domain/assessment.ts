@@ -1,11 +1,7 @@
 import { allocateByWeights } from "./allocation.js";
 
 export function generateExamPaper(subject: string, marks: number): { sections: { name: string; marks: number }[] } {
-  const [sectionAMarks, sectionBMarks, sectionCMarks] = allocateByWeights(marks, [0.3, 0.4, 0.3]) as [
-    number,
-    number,
-    number,
-  ];
+  const [sectionAMarks, sectionBMarks, sectionCMarks] = allocateByWeights(marks, [0.3, 0.4, 0.3] as const);
   return {
     sections: [
       { name: `${subject} Section A (Short questions)`, marks: sectionAMarks },
