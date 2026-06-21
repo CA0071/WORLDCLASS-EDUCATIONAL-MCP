@@ -5,7 +5,7 @@ function allocateIntegerTotals(total: number, weights: [number, number, number])
 
   const rankedRemainders = rawAllocations
     .map((value, index) => ({ index, remainder: value - floorAllocations[index]! }))
-    .sort((left, right) => right.remainder - left.remainder);
+    .sort((first, second) => second.remainder - first.remainder);
 
   for (const allocation of rankedRemainders.slice(0, remainder)) {
     floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;

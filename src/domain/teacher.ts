@@ -9,7 +9,7 @@ function allocateSegmentMinutes(
 
   const rankedRemainders = rawAllocations
     .map((minutes, index) => ({ index, remainder: minutes - floorAllocations[index]! }))
-    .sort((left, right) => right.remainder - left.remainder);
+    .sort((first, second) => second.remainder - first.remainder);
 
   for (const allocation of rankedRemainders.slice(0, remainder)) {
     floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;
