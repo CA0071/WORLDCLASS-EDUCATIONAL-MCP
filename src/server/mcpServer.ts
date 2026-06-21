@@ -54,9 +54,9 @@ export async function handleMcpRequest(request: Request, env: RuntimeEnv): Promi
     if (body.method === "initialize") {
       return Response.json(
         ok(id, {
-          server: { name: "schoolme101-mcp", version: "1.0.0" },
-          capabilities: { tools: true },
-          androidEndpoints: ANDROID_ENDPOINTS,
+          protocolVersion: "2024-11-05",
+          serverInfo: { name: "schoolme101-mcp", version: "1.0.0" },
+          capabilities: { tools: {} },
         }),
       );
     }

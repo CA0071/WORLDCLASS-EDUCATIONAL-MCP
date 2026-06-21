@@ -8,10 +8,11 @@
     "dev": "wrangler dev src/index.ts --env development --local",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check:wrangler": "node --input-type=module -e \"import { readFileSync } from 'node:fs'; const config = readFileSync('wrangler.toml', 'utf8'); if (config.includes('REPLACE_WITH_')) { console.error('wrangler.toml still contains placeholder Cloudflare binding IDs. Replace them before deploying.'); process.exit(1); }\"",
     "lint": "npm run typecheck",
     "start": "node dist/index.js",
     "test": "node --import tsx --test src/tests/**/*.test.ts",
-    "deploy": "wrangler deploy --env production"
+    "deploy": "npm run typecheck && npm run check:wrangler && wrangler deploy --env production"
   },
   "keywords": [
     "mcp",

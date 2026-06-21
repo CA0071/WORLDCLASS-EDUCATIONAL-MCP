@@ -25,6 +25,29 @@ test("create_study_plan validation rejects invalid week count", () => {
   assert.equal(invalid.success, false);
 });
 
+test("handleMcpRequest initialize returns MCP-compliant handshake shape", async () => {
+  const response = await handleMcpRequest(
+    new Request("https://example.com/mcp", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: "init-1", method: "initialize" }),
+    }),
+    {},
+  );
+
+  assert.equal(response.status, 200);
+  const body = (await response.json()) as {
+    result: {
+      protocolVersion: string;
+      serverInfo: { name: string; version: string };
+      capabilities: { tools: Record<string, never> };
+    };
+  };
+  assert.equal(body.result.protocolVersion, "2024-11-05");
+  assert.equal(body.result.serverInfo.name, "schoolme101-mcp");
+  assert.deepEqual(body.result.capabilities.tools, {});
+});
+
 test("record_student_progress requires teacher role without approval gate", () => {
   const tool = getToolByName("record_student_progress");
   assert.ok(tool);
