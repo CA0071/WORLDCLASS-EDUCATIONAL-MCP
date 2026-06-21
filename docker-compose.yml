@@ -1,0 +1,235 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: school101-postgres
+    environment:
+      POSTGRES_USER: school101
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: school101_dev
+      POSTGRES_INITDB_ARGS: "-c max_connections=200"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - school101-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U school101"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: school101-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - school101-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgVector Extension (for semantic search)
+  # This container extends the postgres image with pgvector
+  postgres-vector:
+    image: pgvector/pgvector:pg15
+    container_name: school101-pgvector
+    environment:
+      POSTGRES_USER: school101
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: school101_vector_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_vector_data:/var/lib/postgresql/data
+    networks:
+      - school101-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U school101"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB (Vector database for semantic search)
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: school101-chromadb
+    environment:
+      ANONYMIZED_TELEMETRY: "False"
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_data:/chroma/data
+    networks:
+      - school101-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack (Local AWS Services - optional)
+  # Provides S3, SQS, SNS locally for development
+  localstack:
+    image: localstack/localstack:latest
+    container_name: school101-localstack
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    environment:
+      SERVICES: s3,sqs,sns,dynamodb
+      DEBUG: 1
+      DATA_DIR: /tmp/localstack/data
+      DOCKER_HOST: unix:///var/run/docker.sock
+      LAMBDA_EXECUTOR: docker
+    volumes:
+      - "${TMPDIR:-.}:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - school101-network
+
+  # MailHog (Email testing - captures emails locally)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: school101-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - school101-network
+
+  # Adminer (Database GUI - optional)
+  adminer:
+    image: adminer:latest
+    container_name: school101-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - school101-network
+    depends_on:
+      - postgres
+
+  # pgAdmin (Advanced PostgreSQL GUI - optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: school101-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@school101.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - school101-network
+    depends_on:
+      - postgres
+
+  # Redis Commander (Redis GUI)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: school101-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - school101-network
+    depends_on:
+      - redis
+
+  # Application (SCHOOL101 MCP Server)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school101-mcp-app
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://school101:password@postgres:5432/school101_dev
+      REDIS_URL: redis://redis:6379/0
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+      MAILHOG_HOST: mailhog
+      MAILHOG_PORT: 1025
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node debugger
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - school101-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chromadb:
+        condition: service_healthy
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: school101-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - school101-network
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_vector_data:
+    driver: local
+  redis_data:
+    driver: local
+  chromadb_data:
+    driver: local
+
+networks:
+  school101-network:
+    driver: bridge
+
+# Usage:
+# Start all services:
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f app
+#
+# Stop all services:
+#   docker-compose down
+#
+# Rebuild and restart:
+#   docker-compose up -d --build
+#
+# Access services:
+#   App: http://localhost:3000
+#   Adminer (DB): http://localhost:8080
+#   pgAdmin: http://localhost:5050
+#   Redis Commander: http://localhost:8081
+#   MailHog: http://localhost:8025
+#   ChromaDB API: http://localhost:8000
+#   LocalStack: http://localhost:4566

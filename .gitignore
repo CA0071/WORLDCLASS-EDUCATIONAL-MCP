@@ -1,0 +1,150 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+.vercel/
+.output/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.vim/
+.emacs.d/
+*.iml
+.vimrc
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+jest-results/
+
+# Logs
+logs/
+*.log
+lerna-debug.log*
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+*.tmp
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.ldb
+
+# Certificates and keys (NEVER COMMIT THESE)
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+certs/
+keys/
+ssl/
+credentials/
+*.jks
+.env.*.key
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Kubernetes
+k8s/secrets/
+k8s/configmaps/
+
+# Cloud deployment
+.cloudflare-pages/
+.vercel/
+.netlify/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Dependency lock files (for monorepos)
+lerna-debug.log
+
+# Yarn specific
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# IDE - Cursor
+.cursor/
+
+# IDE - GitHub Codespaces
+.devcontainer/
+
+# IDE - VS Code
+launch.json
+tasks.json
+
+# Local development overrides
+.env.development.local
+.env.test.local
+
+# Data files
+data/
+uploads/
+temp/
+cache/
+
+# Third-party tool artifacts
+.eslintcache
+.stylelintcache
+.prettier-cache/
+
+# Keep important config examples
+!.env.example
+!.env.production.example
+
+# Keep important directories
+!data/.gitkeep
+!uploads/.gitkeep
+!logs/.gitkeep
+
+# Custom project-specific ignores
+generated/
+__generated__/
+migrations/
