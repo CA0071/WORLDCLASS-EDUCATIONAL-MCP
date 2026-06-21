@@ -19,6 +19,9 @@ export interface ClassDashboard {
 
 function toNumber(value: number | string | null | undefined): number {
   const numeric = typeof value === "number" ? value : Number(value ?? 0);
+  if (!Number.isFinite(numeric) && value !== null && value !== undefined) {
+    console.warn("Non-numeric D1 result encountered in progress query", value);
+  }
   return Number.isFinite(numeric) ? numeric : 0;
 }
 

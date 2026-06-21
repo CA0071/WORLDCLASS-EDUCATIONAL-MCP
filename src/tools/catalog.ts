@@ -146,7 +146,7 @@ export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
   },
   {
     name: "record_student_progress",
-    description: "Record student progress. Persists to D1 when available.",
+    description: "Record student progress. Persists to D1 when available; returns the record without persistence when D1 is unavailable.",
     inputSchema: withContext({ studentId: z.string().min(2), subject: subjectSchema, score: z.number().min(0).max(100) }),
     requiredRole: "teacher",
     execute: async (input: any, context: ToolExecutionContext) => ({
