@@ -1,4 +1,7 @@
-function allocateSegmentMinutes(totalMinutes: number, baseSegments: number[]): number[] {
+function allocateSegmentMinutes(
+  totalMinutes: number,
+  baseSegments: [number, number, number, number],
+): [number, number, number, number] {
   const totalBaseMinutes = baseSegments.reduce((sum, minutes) => sum + minutes, 0);
   const rawAllocations = baseSegments.map((minutes) => (minutes / totalBaseMinutes) * totalMinutes);
   const floorAllocations = rawAllocations.map((minutes) => Math.floor(minutes));
@@ -12,12 +15,19 @@ function allocateSegmentMinutes(totalMinutes: number, baseSegments: number[]): n
     floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;
   }
 
-  return floorAllocations;
+  return [floorAllocations[0]!, floorAllocations[1]!, floorAllocations[2]!, floorAllocations[3]!];
 }
 
 export function lessonPlanGenerator(topic: string, durationMinutes: number): { objectives: string[]; flow: string[] } {
-  const [starterMinutes, instructionMinutes, guidedPracticeMinutes, exitTicketMinutes] =
-    durationMinutes >= 35 ? [10, durationMinutes - 25, 10, 5] : allocateSegmentMinutes(durationMinutes, [10, 10, 10, 5]);
+  const [starterMinutes, instructionMinutes, guidedPracticeMinutes, exitTicketMinutes]: [
+    number,
+    number,
+    number,
+    number,
+  ] =
+    durationMinutes >= 35
+      ? [10, durationMinutes - 25, 10, 5]
+      : allocateSegmentMinutes(durationMinutes, [10, 10, 10, 5]);
 
   return {
     objectives: [
@@ -26,10 +36,10 @@ export function lessonPlanGenerator(topic: string, durationMinutes: number): { o
       `Assess understanding of ${topic}`,
     ],
     flow: [
-      `Starter (${starterMinutes ?? 0} min)`,
-      `Instruction (${instructionMinutes ?? 0} min)`,
-      `Guided practice (${guidedPracticeMinutes ?? 0} min)`,
-      `Exit ticket (${exitTicketMinutes ?? 0} min)`,
+      `Starter (${starterMinutes} min)`,
+      `Instruction (${instructionMinutes} min)`,
+      `Guided practice (${guidedPracticeMinutes} min)`,
+      `Exit ticket (${exitTicketMinutes} min)`,
     ],
   };
 }

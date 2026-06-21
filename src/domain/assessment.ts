@@ -1,4 +1,4 @@
-function allocateIntegerTotals(total: number, weights: number[]): number[] {
+function allocateIntegerTotals(total: number, weights: [number, number, number]): [number, number, number] {
   const rawAllocations = weights.map((weight) => total * weight);
   const floorAllocations = rawAllocations.map((value) => Math.floor(value));
   const remainder = total - floorAllocations.reduce((sum, value) => sum + value, 0);
@@ -11,16 +11,16 @@ function allocateIntegerTotals(total: number, weights: number[]): number[] {
     floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;
   }
 
-  return floorAllocations;
+  return [floorAllocations[0]!, floorAllocations[1]!, floorAllocations[2]!];
 }
 
 export function generateExamPaper(subject: string, marks: number): { sections: { name: string; marks: number }[] } {
   const [sectionAMarks, sectionBMarks, sectionCMarks] = allocateIntegerTotals(marks, [0.3, 0.4, 0.3]);
   return {
     sections: [
-      { name: `${subject} Section A (Short questions)`, marks: sectionAMarks ?? 0 },
-      { name: `${subject} Section B (Structured questions)`, marks: sectionBMarks ?? 0 },
-      { name: `${subject} Section C (Extended response)`, marks: sectionCMarks ?? 0 },
+      { name: `${subject} Section A (Short questions)`, marks: sectionAMarks },
+      { name: `${subject} Section B (Structured questions)`, marks: sectionBMarks },
+      { name: `${subject} Section C (Extended response)`, marks: sectionCMarks },
     ],
   };
 }
