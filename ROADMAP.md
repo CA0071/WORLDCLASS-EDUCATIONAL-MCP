@@ -2,14 +2,15 @@
 
 ## Phase 1 (v1 - current)
 - Cloudflare Worker MCP foundation
-- 25 core tools with strict validation
+- 27 core tools with strict validation
 - South Africa CAPS metadata + Africa expansion hooks
+- Teacher progress history + dashboard flows with safe no-D1 fallback responses
 - Security stubs and Android contracts
 
 ## Phase 2
 - Real JWT/OIDC verification
-- D1-backed progress persistence + audit storage
-- Teacher/lecturer role dashboards
+- Hardened D1-backed progress persistence + audit storage
+- Lecturer/department dashboards and cohort reporting
 
 ## Phase 3
 - LMS integrations (Canvas, Google Classroom)

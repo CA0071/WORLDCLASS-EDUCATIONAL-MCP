@@ -20,3 +20,9 @@
 
 ## SCHOOLME101 positioning in v1
 This foundation prioritizes practical tools for learners and educators in African contexts, starts with CAPS-oriented metadata for South Africa, and keeps integration/security hooks ready for production hardening.
+
+## Current educational capability surface
+- **27 MCP tools** across curriculum, study, STEM, language, assessment, progress, teacher, and accessibility domains
+- **Teacher-facing progress workflows** include `record_student_progress`, `get_student_progress_history`, `class_progress_summary`, `recommend_interventions`, and `teacher_dashboard`
+- **Storage-aware behavior** keeps progress history and dashboard tools safe in local/dev deployments by returning informative fallback notes when D1 is not configured
+- **Future-facing integrations** remain scaffolded in `src/integrations/` so Worker routing, security boundaries, and Android contracts stay stable while LMS/auth/persistence hardening evolves
