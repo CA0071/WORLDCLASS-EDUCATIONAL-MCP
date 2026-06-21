@@ -5,7 +5,7 @@ import { verifyToken } from "../security/auth.js";
 import { getToolByName, TOOL_CATALOG } from "../tools/catalog.js";
 
 test("tool catalog has required baseline tools", () => {
-  assert.ok(TOOL_CATALOG.length >= 26);
+  assert.equal(TOOL_CATALOG.length, 27);
   const required = [
     "list_curriculum_frameworks",
     "create_study_plan",
@@ -16,6 +16,28 @@ test("tool catalog has required baseline tools", () => {
     "teacher_dashboard",
   ];
   required.forEach((name) => assert.ok(getToolByName(name), `${name} should exist`));
+});
+
+test("tools/list exposes the full educational tool catalog including teacher progress tools", async () => {
+  const response = await handleMcpRequest(
+    new Request("https://example.com/mcp", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: "list-1", method: "tools/list" }),
+    }),
+    {},
+  );
+
+  assert.equal(response.status, 200);
+  const body = (await response.json()) as {
+    result: {
+      tools: Array<{ name: string }>;
+    };
+  };
+  assert.equal(body.result.tools.length, TOOL_CATALOG.length);
+  const names = body.result.tools.map((tool) => tool.name);
+  assert.ok(names.includes("get_student_progress_history"));
+  assert.ok(names.includes("teacher_dashboard"));
 });
 
 test("create_study_plan validation rejects invalid week count", () => {

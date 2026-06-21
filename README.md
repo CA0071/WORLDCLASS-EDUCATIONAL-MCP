@@ -4,10 +4,10 @@ Production-ready TypeScript MCP server foundation for Cloudflare Workers, focuse
 
 ## Highlights
 - Cloudflare Worker MCP transport (`POST /mcp`)
-- 25 validated education tools for Grade R-12 and tertiary contexts
+- 27 validated education tools across curriculum, study, STEM, language, assessment, progress, teacher, and accessibility workflows
 - South Africa CAPS-first curriculum metadata with Africa extension placeholders
 - Security-by-default hooks: token verification, role checks, approval gate, audit logging
-- Android integration contracts and offline sync hook conventions
+- Optional D1-backed teacher progress history and dashboard flows, with Android integration contracts and offline sync hook conventions
 
 ## Architecture
 - `src/server` - MCP transport, JSON-RPC handling, route registration
@@ -18,33 +18,50 @@ Production-ready TypeScript MCP server foundation for Cloudflare Workers, focuse
 - `src/android` - endpoint conventions and JSON contract examples
 
 ## Tool Catalog
+### Curriculum
 1. list_curriculum_frameworks
 2. get_subjects_by_grade
 3. get_learning_objectives
+
+### Study and Revision
 4. create_study_plan
 5. spaced_repetition_schedule
 6. generate_revision_pack
+
+### STEM
 7. solve_math_stepwise
 8. generate_math_practice
 9. explain_science_concept
 10. generate_science_quiz
+
+### Language
 11. language_reading_passage
 12. language_comprehension_questions
 13. grammar_practice_generator
+
+### Assessment
 14. generate_exam_paper
 15. generate_assignment
 16. rubric_generator
 17. mark_scheme_generator
+
+### Progress and Analytics
 18. record_student_progress
 19. identify_learning_gaps
 20. recommend_interventions
 21. class_progress_summary
-22. lesson_plan_generator
-23. classroom_activity_generator
-24. simplify_text_for_level
-25. dyslexia_friendly_format
+22. get_student_progress_history
+23. teacher_dashboard
 
-All tools are strongly validated using Zod and include locale/country/grade/phase language context support.
+### Teacher Workflow
+24. lesson_plan_generator
+25. classroom_activity_generator
+
+### Accessibility
+26. simplify_text_for_level
+27. dyslexia_friendly_format
+
+All tools are strongly validated using Zod and include locale/country/grade/phase/language context support. Progress history and dashboard tools degrade safely when D1 is not configured.
 
 ## MCP Examples
 ### Initialize
@@ -90,6 +107,7 @@ All tools are strongly validated using Zod and include locale/country/grade/phas
 - Contract helpers: `src/android/contracts.ts`
 - Token handling: send a bearer token in the `Authorization` header
 - Offline sync hook: operation IDs + retry/backoff + idempotency key
+- D1-backed progress workflows are optional in local/dev mode and return safe stub notes when storage is not configured
 
 ## Scripts
 - `npm run dev` - local worker via Wrangler
