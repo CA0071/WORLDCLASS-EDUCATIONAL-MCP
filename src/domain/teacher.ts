@@ -2,14 +2,13 @@ function allocateSegmentMinutes(totalMinutes: number, baseSegments: number[]): n
   const totalBaseMinutes = baseSegments.reduce((sum, minutes) => sum + minutes, 0);
   const rawAllocations = baseSegments.map((minutes) => (minutes / totalBaseMinutes) * totalMinutes);
   const floorAllocations = rawAllocations.map((minutes) => Math.floor(minutes));
-  let remainder = totalMinutes - floorAllocations.reduce((sum, minutes) => sum + minutes, 0);
+  const remainder = totalMinutes - floorAllocations.reduce((sum, minutes) => sum + minutes, 0);
 
   const rankedRemainders = rawAllocations
     .map((minutes, index) => ({ index, remainder: minutes - floorAllocations[index]! }))
     .sort((left, right) => right.remainder - left.remainder);
 
-  for (let i = 0; i < remainder; i++) {
-    const allocation = rankedRemainders[i % rankedRemainders.length]!;
+  for (const allocation of rankedRemainders.slice(0, remainder)) {
     floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;
   }
 

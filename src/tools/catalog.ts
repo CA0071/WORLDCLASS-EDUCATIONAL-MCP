@@ -160,10 +160,11 @@ export const TOOL_CATALOG: ToolDefinition<z.ZodTypeAny>[] = [
         { studentId: input.studentId, subject: input.subject, score: input.score },
         context.db,
       );
-      return {
-        saved,
-        ...(saved.persisted ? {} : { note: "D1 storage not configured. Progress was validated but not persisted." }),
-      };
+      const result: { saved: typeof saved; note?: string } = { saved };
+      if (!saved.persisted) {
+        result.note = "D1 storage not configured. Progress was validated but not persisted.";
+      }
+      return result;
     },
   },
   {

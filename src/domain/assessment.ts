@@ -1,14 +1,13 @@
 function allocateIntegerTotals(total: number, weights: number[]): number[] {
   const rawAllocations = weights.map((weight) => total * weight);
   const floorAllocations = rawAllocations.map((value) => Math.floor(value));
-  let remainder = total - floorAllocations.reduce((sum, value) => sum + value, 0);
+  const remainder = total - floorAllocations.reduce((sum, value) => sum + value, 0);
 
   const rankedRemainders = rawAllocations
     .map((value, index) => ({ index, remainder: value - floorAllocations[index]! }))
     .sort((left, right) => right.remainder - left.remainder);
 
-  for (let i = 0; i < remainder; i++) {
-    const allocation = rankedRemainders[i % rankedRemainders.length]!;
+  for (const allocation of rankedRemainders.slice(0, remainder)) {
     floorAllocations[allocation.index] = floorAllocations[allocation.index]! + 1;
   }
 
